@@ -198,7 +198,9 @@ describe("Test the app", () => {
 			const response = await request(app)
 				.delete(`/api/v1/users/delete/${normalUserId}`)
 				.set("Authorization", `Bearer ${adminToken}`);
-
+			await request(app)
+				.delete(`/api/v1/users/delete/${userID}`)
+				.set("Authorization", `Bearer ${adminToken}`);
 			expect(response.status).toBe(200);
 		});
 	});
