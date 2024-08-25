@@ -15,6 +15,30 @@ const newToken = (user) => {
 	});
 };
 
+export const createAdmin = asyncHandler(async (req, res) => {
+	const { name, username, password } = req.body;
+
+	if ([name, username, password].some((field) => !field.trim())) {
+		throw new ApiError(400, "All fields are required");
+	}
+
+	const existedUser = await User.findOne({ username });
+	if (existedUser) throw new ApiError(403, "User with the same username already exists");
+
+	const user = await User.create({
+		username,
+		name,
+		password,
+		isAdmin: true,
+	});
+
+	const registeredUser = await User.findById(user._id).select("-password");
+
+	if (!registeredUser) throw new ApiError(500, "Something went wrong while registering the user");
+
+	return res.status(201).json(new ApiResponse(200, registeredUser, "User created successfully"));
+});
+
 export const createUser = asyncHandler(async (req, res) => {
 	const { name, username, password } = req.body;
 
@@ -61,10 +85,8 @@ export const editUser = asyncHandler(async (req, res) => {
 export const deleteUser = asyncHandler(async (req, res) => {
 	const { userId } = req.params;
 
-	const user = await User.findById(userId);
+	const user = await User.findByIdAndDelete(userId);
 	if (!user) throw new ApiError(404, "User not found");
-
-	await user.remove();
 
 	return res.status(200).json(new ApiResponse(200, {}, "User deleted successfully"));
 });
