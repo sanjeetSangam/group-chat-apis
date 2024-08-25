@@ -15,7 +15,7 @@ const newToken = (user) => {
 	});
 };
 
-export const createAdmin = asyncHandler(async (req, res) => {
+const createUserHandler = async (req, res, isAdmin = false) => {
 	const { name, username, password } = req.body;
 
 	if ([name, username, password].some((field) => !field.trim())) {
@@ -29,7 +29,7 @@ export const createAdmin = asyncHandler(async (req, res) => {
 		username,
 		name,
 		password,
-		isAdmin: true,
+		isAdmin,
 	});
 
 	const registeredUser = await User.findById(user._id).select("-password");
@@ -37,29 +37,14 @@ export const createAdmin = asyncHandler(async (req, res) => {
 	if (!registeredUser) throw new ApiError(500, "Something went wrong while registering the user");
 
 	return res.status(201).json(new ApiResponse(200, registeredUser, "User created successfully"));
+};
+
+export const createAdmin = asyncHandler(async (req, res) => {
+	return createUserHandler(req, res, true);
 });
 
 export const createUser = asyncHandler(async (req, res) => {
-	const { name, username, password } = req.body;
-
-	if ([name, username, password].some((field) => !field.trim())) {
-		throw new ApiError(400, "All fields are required");
-	}
-
-	const existedUser = await User.findOne({ username });
-	if (existedUser) throw new ApiError(403, "User with the same username already exists");
-
-	const user = await User.create({
-		username,
-		name,
-		password,
-	});
-
-	const registeredUser = await User.findById(user._id).select("-password");
-
-	if (!registeredUser) throw new ApiError(500, "Something went wrong while registering the user");
-
-	return res.status(201).json(new ApiResponse(200, registeredUser, "User created successfully"));
+	return createUserHandler(req, res);
 });
 
 export const editUser = asyncHandler(async (req, res) => {

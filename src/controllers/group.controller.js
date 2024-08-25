@@ -52,7 +52,7 @@ export const deleteGroup = asyncHandler(async (req, res) => {
 	const { groupId } = req.params;
 
 	if (!groupId) {
-		throw new ApiError(400, "Group ID and member IDs are required");
+		throw new ApiError(400, "Group ID is required");
 	}
 
 	await Group.findByIdAndDelete(groupId);
@@ -66,7 +66,7 @@ export const fetchUserGroups = asyncHandler(async (req, res) => {
 	const groups = await Group.find({ members: userId });
 
 	if (!groups || groups.length === 0) {
-		return res.status(404).json(new ApiError(404, "No Group not found"));
+		return res.status(404).json(new ApiError(404, "Group not found"));
 	}
 
 	res.status(200).json(
@@ -77,7 +77,7 @@ export const fetchUserGroups = asyncHandler(async (req, res) => {
 export const fetchGroupMembers = asyncHandler(async (req, res) => {
 	const { groupId } = req.params;
 
-	if (!groupId) throw new ApiError(400, "Invalid group provided");
+	if (!groupId) throw new ApiError(400, "Group ID is required");
 
 	const members = await Group.findById(groupId).populate({
 		path: "members",
